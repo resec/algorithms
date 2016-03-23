@@ -13,3 +13,8 @@ hs_err_pid*
 
 # idea project folder
 /.idea
+# idea generated model file
+*.iml
+
+# maven target folder
+*/target/

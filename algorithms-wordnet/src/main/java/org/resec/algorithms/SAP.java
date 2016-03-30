@@ -1,6 +1,8 @@
 package org.resec.algorithms;
 
-import edu.princeton.cs.algs4.*;
+import edu.princeton.cs.algs4.Digraph;
+import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.Queue;
 
 import java.util.Collections;
 
@@ -16,21 +18,20 @@ public class SAP {
 
     // do unit testing of this class
     public static void main(String[] args) {
-        In in = new In(args[0]);
+        String file = "testing/digraph2.txt";
+        In in = new In(file);
         Digraph G = new Digraph(in);
         SAP sap = new SAP(G);
-        while (!StdIn.isEmpty()) {
-            int v = StdIn.readInt();
-            int w = StdIn.readInt();
-            int length = sap.length(v, w);
-            int ancestor = sap.ancestor(v, w);
-            StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);
-        }
+        int length = sap.length(1, 3);
+        int ancestor = sap.ancestor(1, 3);
+        System.out.println(length);
+        System.out.println(ancestor);
     }
 
     // length of shortest ancestral path between v and w; -1 if no such path
     public int length(int v, int w) {
         validateNullInput(v, w);
+        validateNonExistedVertex(v, w);
 
         Result result = findSAP(Collections.singletonList(v), Collections.singletonList(w));
 
@@ -45,6 +46,7 @@ public class SAP {
     // a common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
     public int ancestor(int v, int w) {
         validateNullInput(v, w);
+        validateNonExistedVertex(v, w);
 
         Result result = findSAP(Collections.singletonList(v), Collections.singletonList(w));
 
@@ -58,6 +60,8 @@ public class SAP {
     // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
     public int length(Iterable<Integer> v, Iterable<Integer> w) {
         validateNullInput(v, w);
+        validateNonExistedVertex(v);
+        validateNonExistedVertex(w);
 
         Result result = findSAP(v, w);
 
@@ -71,6 +75,8 @@ public class SAP {
     // a common ancestor that participates in shortest ancestral path; -1 if no such path
     public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
         validateNullInput(v, w);
+        validateNonExistedVertex(v);
+        validateNonExistedVertex(w);
 
         Result result = findSAP(v, w);
 
@@ -85,6 +91,22 @@ public class SAP {
         for (Object input : inputs) {
             if (input == null) {
                 throw new NullPointerException("At least one input is null");
+            }
+        }
+    }
+
+    private void validateNonExistedVertex(int... vertexes) {
+        for (int v : vertexes) {
+            if (v < 0 || v > digraph.V() - 1) {
+                throw new IndexOutOfBoundsException(String.format("Not existed vertex %d in the diagraph", v));
+            }
+        }
+    }
+
+    private void validateNonExistedVertex(Iterable<Integer> vertexes) {
+        for (int v : vertexes) {
+            if (v < 0 || v > digraph.V() - 1) {
+                throw new IndexOutOfBoundsException(String.format("Not existed vertex %d in the diagraph", v));
             }
         }
     }
@@ -143,7 +165,7 @@ public class SAP {
         while (witer > 0) {
             int from = q.dequeue();
             for (Integer to : digraph.adj(from)) {
-                if (marked[to] != -1) {
+                if (marked[to] == -1) {
                     marked[to] = marked[from] + 1;
                     q.enqueue(to);
                 }
@@ -152,11 +174,12 @@ public class SAP {
         }
     }
 
-    class Result {
-        protected int length;
-        protected int ancestor;
+    private class Result {
 
-        protected Result(int length, int ancestor) {
+        final int length;
+        final int ancestor;
+
+        Result(int length, int ancestor) {
             this.length = length;
             this.ancestor = ancestor;
         }

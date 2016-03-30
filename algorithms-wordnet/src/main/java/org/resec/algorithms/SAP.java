@@ -2,6 +2,8 @@ package org.resec.algorithms;
 
 import edu.princeton.cs.algs4.*;
 
+import java.util.Collections;
+
 public class SAP {
 
     private final Digraph digraph;
@@ -30,41 +32,113 @@ public class SAP {
     public int length(int v, int w) {
         validateNullInput(v, w);
 
+        Result result = findSAP(Collections.singletonList(v), Collections.singletonList(w));
+
+        if (result != null) {
+            return result.length;
+        } else {
+            return -1;
+        }
+    }
+
+
+    // a common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
+    public int ancestor(int v, int w) {
+        validateNullInput(v, w);
+
+        Result result = findSAP(Collections.singletonList(v), Collections.singletonList(w));
+
+        if (result != null) {
+            return result.ancestor;
+        } else {
+            return -1;
+        }
+    }
+
+    // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
+    public int length(Iterable<Integer> v, Iterable<Integer> w) {
+        validateNullInput(v, w);
+
+        Result result = findSAP(v, w);
+
+        if (result != null) {
+            return result.length;
+        } else {
+            return -1;
+        }
+    }
+
+    // a common ancestor that participates in shortest ancestral path; -1 if no such path
+    public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
+        validateNullInput(v, w);
+
+        Result result = findSAP(v, w);
+
+        if (result != null) {
+            return result.ancestor;
+        } else {
+            return -1;
+        }
+    }
+
+    private void validateNullInput(Object... inputs) {
+        for (Object input : inputs) {
+            if (input == null) {
+                throw new NullPointerException("At least one input is null");
+            }
+        }
+    }
+
+    private Result findSAP(Iterable<Integer> v, Iterable<Integer> w) {
         // consider finding the common ancestor by starting two bfs from the two
         // sources on the diagraph until they meet each other
-        int[] vmarked = new int[digraph.V()];
-        int[] wmarked = new int[digraph.V()];
-        for (int i = 0; i < digraph.V(); i++) {
+        int[] vmarked = new int[this.digraph.V()];
+        int[] wmarked = new int[this.digraph.V()];
+        for (int i = 0; i < this.digraph.V(); i++) {
             vmarked[i] = -1;
             wmarked[i] = -1;
         }
 
         Queue<Integer> vq = new Queue<>();
         Queue<Integer> wq = new Queue<>();
-        vq.enqueue(v);
-        wq.enqueue(w);
+
+        for (int s : v) {
+            vmarked[s] = 0;
+            vq.enqueue(s);
+        }
+        for (int s : w) {
+            wmarked[s] = 0;
+            wq.enqueue(s);
+        }
 
         while (!vq.isEmpty() || !wq.isEmpty()) {
-            // start a new round of expanding for v
+            // start a new round of expanding for v, w
             expand(vmarked, vq);
-
-            // start a new round of expanding for w
             expand(wmarked, wq);
 
             // check if they meet each other
-            for (int i = 0; i < digraph.V(); i++) {
+            int length = Integer.MAX_VALUE;
+            int ancestor = Integer.MAX_VALUE;
+            for (int i = 0; i < this.digraph.V(); i++) {
                 if (vmarked[i] != -1 && wmarked[i] != -1) {
-                    // found the common ancestor, also should be nearest one
-
+                    if (length > vmarked[i] + wmarked[i]) {
+                        length = vmarked[i] + wmarked[i];
+                        ancestor = i;
+                    }
                 }
+            }
+
+            if (length != Integer.MAX_VALUE) {
+                // found the nearest common ancestor
+                return new Result(length, ancestor);
             }
         }
 
-
-        return 0;
+        return null;
     }
 
     private void expand(int[] marked, Queue<Integer> q) {
+        // clean up current nodes in the queue
         int witer = q.size();
         while (witer > 0) {
             int from = q.dequeue();
@@ -78,30 +152,14 @@ public class SAP {
         }
     }
 
-    // a common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
-    public int ancestor(int v, int w) {
-        validateNullInput(v, w);
-        return 0;
-    }
+    class Result {
+        protected int length;
+        protected int ancestor;
 
-    // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
-    public int length(Iterable<Integer> v, Iterable<Integer> w) {
-        validateNullInput(v, w);
-
-        return 0;
-    }
-
-    // a common ancestor that participates in shortest ancestral path; -1 if no such path
-    public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
-        validateNullInput(v, w);
-        return 0;
-    }
-
-    private void validateNullInput(Object... inputs) {
-        for (Object input : inputs) {
-            if (input == null) {
-                throw new NullPointerException("At least one input is null");
-            }
+        protected Result(int length, int ancestor) {
+            this.length = length;
+            this.ancestor = ancestor;
         }
     }
 }
+

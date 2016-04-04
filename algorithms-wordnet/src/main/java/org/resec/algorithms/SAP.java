@@ -137,8 +137,8 @@ public class SAP {
             qs.add(q);
         }
 
-        boolean goon = true;
-        while (goon) {
+        boolean goon;
+        do {
             // start a new round of expanding for all vs
             Iterator<ST<Integer, Integer>> imarked = markeds.iterator();
             Iterator<Queue<Integer>> iq = qs.iterator();
@@ -163,7 +163,7 @@ public class SAP {
             // check if they meet each other
             int length = Integer.MAX_VALUE;
             int ancestor = Integer.MAX_VALUE;
-            for (int i = 0; i < this.digraph.V(); i++) {
+            for (int i = 0; i < digraph.V(); i++) {
                 boolean found = true;
                 int sum = 0;
                 for (ST<Integer, Integer> marked : markeds) {
@@ -193,7 +193,7 @@ public class SAP {
                     break;
                 }
             }
-        }
+        } while (goon);
 
         return null;
     }
@@ -213,5 +213,6 @@ public class SAP {
             return "length: " + length + ", ancestor: " + ancestor;
         }
     }
+
 }
 
